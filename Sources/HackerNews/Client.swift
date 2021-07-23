@@ -8,28 +8,45 @@
 import Foundation
 import Combine
 import Firebase
+import OSLog
 
 /// HackerNews Client that exposes methods to get users, items and stories from https://news.ycombinator.com
 public class HackerNewsClient {
+    public static let shared: HackerNewsClient = HackerNewsClient()
     private let session: URLSession = URLSession.shared
-    private let ref: DatabaseReference!
+    public let ref: DatabaseReference!
     
-    public init(app: FirebaseApp?) {
+    private init() {
         FirebaseApp.configure()
         ref = Database.database().reference().child("v0")
     }
     
     /// Retrieves user  from HackerNews
     public func getUser(withId id: String, completionHandler: @escaping (User) -> Void) {
-        URLSession.request(urlString: HackerNews.API.User.id(id).urlString, type: User.self) { user in
-            completionHandler(user)
+        ref.child("user/\(id)").getData { error, snapshot in
+            NSLog("Checking for data error")
+            guard let data = snapshot.data else { return }
+            do {
+                NSLog("Trying to decode data")
+                let user = try JSONDecoder().decode(User.self, from: data)
+                NSLog("Running completion handler")
+                completionHandler(user)
+            } catch {
+                NSLog("Catching error while decoding: \(error)")
+            }
         }
     }
     
     /// Retrieves item from HackerNews
     public func getItem(withId id: Int, completionHandler: @escaping (Item) -> Void) {
-        URLSession.request(urlString: HackerNews.API.Item.id(id).urlString, type: Item.self) { item in
-            completionHandler(item)
+        ref.child("item/\(id)").getData { error, snapshot in
+            guard let data = snapshot.data else { return }
+            do {
+                let user = try JSONDecoder().decode(Item.self, from: data)
+                completionHandler(user)
+            } catch {
+                print(error)
+            }
         }
     }
     
@@ -40,8 +57,14 @@ public class HackerNewsClient {
     ///   - `best`
     ///   - `new`
     public func getStoriesId(by api: HackerNews.API.Stories, completionHandler: @escaping ([Int]) -> Void) {
-        URLSession.request(urlString: api.urlString, type: [Int].self) { storiesIds in
-            completionHandler(storiesIds)
+        ref.child("\(api.rawValue)stories").getData { error, snapshot in
+            guard let data = snapshot.data else { return }
+            do {
+                let user = try JSONDecoder().decode([Int].self, from: data)
+                completionHandler(user)
+            } catch {
+                print(error)
+            }
         }
     }
     
@@ -52,10 +75,16 @@ public class HackerNewsClient {
         let commentsGroup = DispatchGroup()
         for commentId in commentsIds {
             commentsGroup.enter()
-            URLSession.request(urlString: HackerNews.API.Item.id(commentId).urlString, type: Comment.self) { comment in
-                comment.getComments { success in
-                    returnComments.append(comment)
-                    commentsGroup.leave()
+            ref.child("item/\(commentId)").getData { error, snapshot in
+                guard let data = snapshot.data else { return }
+                do {
+                    let comment = try JSONDecoder().decode(Comment.self, from: data)
+                    comment.getComments { success in
+                        returnComments.append(comment)
+                        commentsGroup.leave()
+                    }
+                } catch {
+                    print(error)
                 }
             }
         }

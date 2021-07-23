@@ -7,17 +7,30 @@
 
 import Foundation
 
-public class Comment: Codable {
-    var id:    Int?
-    var by:    String?
-    var text:  String?
-    var time:  Int?
-    var commentsIds : Array<Int> = []
-    var comments : [Comment] = []
-    var indentLevel : Int = 0
+public class Comment: Decodable {
+    public var id:    Int?
+    public var by:    String?
+    public var text:  String?
+    public var time:  Int?
+    public var kids: Array<Int> = []
+    public var comments: [Comment] = []
+    public var indentLevel: Int = 0
     
-    func getComments(completionHandler: @escaping (Bool) -> Void) {
-        guard commentsIds.count > 0 else {
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        by = try container.decode(String.self, forKey: .by)
+        time = try container.decode(Int.self, forKey: .time)
+        text = try container.decode(String.self, forKey: .text)
+        kids = try container.decode([Int].self, forKey: .kids)
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case id, by, text, time, kids
+    }
+    
+    public func getComments(completionHandler: @escaping (Bool) -> Void) {
+        guard kids.count > 0 else {
             completionHandler(true)
             return
         }
@@ -25,14 +38,20 @@ public class Comment: Codable {
         var returnComments : [Comment] = []
         
         let commentsGroup = DispatchGroup()
-        for commentId in commentsIds {
+        for commentId in kids {
             commentsGroup.enter()
             let currentIndentLevel = self.indentLevel
-            URLSession.request(urlString: HackerNews.API.Item.id(commentId).urlString, type: Comment.self) { comment in
-                comment.indentLevel = currentIndentLevel + 1
-                comment.getComments { success in
-                    returnComments.append(comment)
-                    commentsGroup.leave()
+            HackerNewsClient.shared.ref.child("item/\(commentId)").getData { error, snapshot in
+                guard let data = snapshot.data else { return }
+                do {
+                    let comment = try JSONDecoder().decode(Comment.self, from: data)
+                    comment.indentLevel = currentIndentLevel + 1
+                    comment.getComments { success in
+                        returnComments.append(comment)
+                        commentsGroup.leave()
+                    }
+                } catch {
+                    print(error)
                 }
             }
         }
@@ -43,7 +62,7 @@ public class Comment: Codable {
         }
     }
     
-    func numberOfComments() -> Int {
+    public func numberOfComments() -> Int {
         var numberOfComments = comments.count
         for comment in comments {
             numberOfComments += comment.numberOfComments()
@@ -51,7 +70,7 @@ public class Comment: Codable {
         return numberOfComments
     }
     
-    func flattenedComments() -> Any {
+    public func flattenedComments() -> Any {
         var commentsArray: [Any] = [self]
         for comment in comments {
             commentsArray += comment.flattenedComments() as! Array<Any>
