@@ -1,3 +1,3 @@
-# HackerNews
+# HackerNews Swift API
 
-A description of this package.
+This is a swift package that contains the Hacker News API
