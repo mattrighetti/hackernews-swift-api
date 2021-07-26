@@ -8,9 +8,9 @@
 import Foundation
 
 public struct User: Decodable {
-    public let id: String
-    public let created: Int
-    public let karma: Int
-    public let about: String?
-    public let submitted: [Int]?
+    public var id: String?
+    public var created: Int?
+    public var karma: Int? = 0
+    public var about: String? = ""
+    public var submitted: [Int]? = []
 }

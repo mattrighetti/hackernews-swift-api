@@ -27,7 +27,6 @@ public class HackerNewsClient {
             NSLog("Checking for data error")
             guard let data = snapshot.data else { return }
             do {
-                NSLog("Trying to decode data")
                 let user = try JSONDecoder().decode(User.self, from: data)
                 NSLog("Running completion handler")
                 completionHandler(user)

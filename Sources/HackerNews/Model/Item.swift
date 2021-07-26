@@ -67,4 +67,3 @@ public enum ItemType: String, Decodable {
     case comment
     case pollopt
 }
-
