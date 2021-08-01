@@ -95,4 +95,17 @@ public class HackerNewsClient {
             completionHandler(true, returnComments)
         }
     }
+    
+    /// This method will scrape comments directly from `https://news.ycombinator.com`
+    /// Comments are fetched way faster than the recursive method, this method will return the scraped comments
+    /// and a bool value indicating if there are more to fetch
+    /// - parameter id: ItemID to whose comments will be scraped
+    /// - parameter page: Page number from where comments will be scraped
+    /// - parameter completionHander: Completion handler that will run after comments are fetched
+    /// - parameter comments: Scraped comments, this will be empty if there are no comments/something goes wrong during the fetching process
+    /// - parameter hasMore: This will be true if there are more comments available in next pages
+    public func getComments(forItemId id: Int, page: Int? = 0, completionHandler: @escaping (_ comments: [ScrapedComment], _ hasMore: Bool) -> Void) {
+        let result = scrapeComments(for: .item(id, page!))
+        completionHandler(result.0, result.1)
+    }
 }

@@ -51,4 +51,27 @@ public struct HackerNews {
             }
         }
     }
+    
+    public enum WebsiteURL {
+        case item(Int, Int)
+        
+        public var url: URL {
+            var components = URLComponents()
+            components.scheme = "https"
+            components.host = "news.ycombinator.com"
+            components.path = "/item"
+            
+            switch self {
+            case .item(let itemId, let page):
+                components.queryItems = [
+                    URLQueryItem(name: "id", value: String(itemId))
+                ]
+                
+                if page != 0, page != 1 {
+                    components.queryItems!.append(URLQueryItem(name: "p", value: String(page)))
+                }
+            }
+            return components.url!
+        }
+    }
 }
