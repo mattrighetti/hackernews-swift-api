@@ -1,9 +1,10 @@
+//===----------------------------------------------------------------------===//
 //
-//  HackerNes.swift
-//  HNReader
+// This source file is part of the Hacker News API Swift open source project
 //
-//  Created by Mattia Righetti on 23/07/21.
+// Copyright (c) 2021 Mattia Righetti. All rights reserved.
 //
+//===----------------------------------------------------------------------===//
 
 import Foundation
 
@@ -33,10 +34,6 @@ public struct HackerNews {
             case ask
             case job
             case show
-            
-            public var urlString: String {
-                "\(HackerNews.endpoint)/\(self.rawValue)stories.json"
-            }
         }
 
         /// HackerNews Item REST API methods
@@ -54,15 +51,16 @@ public struct HackerNews {
     
     public enum WebsiteURL {
         case item(Int, Int)
+        case threads(String)
         
         public var url: URL {
             var components = URLComponents()
             components.scheme = "https"
             components.host = "news.ycombinator.com"
-            components.path = "/item"
             
             switch self {
             case .item(let itemId, let page):
+                components.path = "/item"
                 components.queryItems = [
                     URLQueryItem(name: "id", value: String(itemId))
                 ]
@@ -70,6 +68,11 @@ public struct HackerNews {
                 if page != 0, page != 1 {
                     components.queryItems!.append(URLQueryItem(name: "p", value: String(page)))
                 }
+            case .threads(let username):
+                components.path = "/threads"
+                components.queryItems = [
+                    URLQueryItem(name: "id", value: username)
+                ]
             }
             return components.url!
         }

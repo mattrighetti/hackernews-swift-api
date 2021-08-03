@@ -1,9 +1,10 @@
+//===----------------------------------------------------------------------===//
 //
-//  File.swift
-//  
+// This source file is part of the Hacker News API Swift open source project
 //
-//  Created by Mattia Righetti on 23/07/21.
+// Copyright (c) 2021 Mattia Righetti. All rights reserved.
 //
+//===----------------------------------------------------------------------===//
 
 import Firebase
 

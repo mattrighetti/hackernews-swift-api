@@ -10,10 +10,7 @@ let package = Package(
         .iOS(.v11)
     ],
     products: [
-        .library(
-            name: "HackerNews",
-            targets: ["HackerNews"]
-        ),
+        .library(name: "HackerNews", targets: ["HackerNews"]),
     ],
     dependencies: [
         .package(name: "Firebase", url: "https://github.com/firebase/firebase-ios-sdk.git", from: "8.4.0"),
@@ -25,7 +22,7 @@ let package = Package(
             dependencies: [
                 .product(name: "FirebaseDatabase", package: "Firebase"),
                 .product(name: "SwiftSoup", package: "SwiftSoup")
-            ]),
+            ], path: "Sources"),
         .testTarget(
             name: "HackerNewsTests",
             dependencies: ["HackerNews"]),

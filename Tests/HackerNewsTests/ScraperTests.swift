@@ -1,9 +1,10 @@
+//===----------------------------------------------------------------------===//
 //
-//  File.swift
-//  
+// This source file is part of the Hacker News API Swift open source project
 //
-//  Created by Mattia Righetti on 31/07/21.
+// Copyright (c) 2021 Mattia Righetti. All rights reserved.
 //
+//===----------------------------------------------------------------------===//
 
 import XCTest
 import SwiftSoup
@@ -510,13 +511,7 @@ final class ScraperTests: XCTestCase {
         XCTAssertEqual(url.absoluteString, "https://news.ycombinator.com/item?id=12444")
         url = HackerNews.WebsiteURL.item(12444, 1).url
         XCTAssertEqual(url.absoluteString, "https://news.ycombinator.com/item?id=12444")
-    }
-    
-    func testLongFetch() throws {
-        measure {
-            getComments(forItemId: 28016834) { comments in
-                print(comments.count)
-            }
-        }
+        url = HackerNews.WebsiteURL.threads("mattrighetti").url
+        XCTAssertEqual(url.absoluteString, "https://news.ycombinator.com/threads?id=mattrighetti")
     }
 }
