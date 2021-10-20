@@ -514,4 +514,11 @@ final class ScraperTests: XCTestCase {
         url = HackerNews.WebsiteURL.threads("mattrighetti").url
         XCTAssertEqual(url.absoluteString, "https://news.ycombinator.com/threads?id=mattrighetti")
     }
+    
+    func testLoginLogout() throws {
+        var user = HackerNews.API.User.id("mattrighetti")
+        HackerNewsScraperClient.shared.logout(username: "mattrighetti") { success in
+            
+        }
+    }
 }

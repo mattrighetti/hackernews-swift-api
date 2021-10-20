@@ -9,22 +9,26 @@
 import Foundation
 import Firebase
 
+// MARK: - Firebase API client
+
 /// HackerNews Client that exposes methods to get users, items and stories from https://news.ycombinator.com
-public class HackerNewsClient {
-    public static let shared: HackerNewsClient = HackerNewsClient()
-    private let session: URLSession = URLSession.shared
-    public let ref: DatabaseReference!
+public class HackerNewsFirebaseClient {
+    public static let shared = HackerNewsFirebaseClient()
+    public var ref: DatabaseReference!
     
-    private init() {
+    public init() {
+        setup()
+    }
+    
+    // MARK: - Firebase Setup
+    private func setup() {
         // This will look for the GoogleInfo.plist file in your project and
         // configure the database accordingly
         FirebaseApp.configure()
         // Configure default child `v0` since HN database address
         // is `https://hacker-news.firebaseio.com/v0`
-        ref = Database.database().reference().child("v0")
+        self.ref = Database.database().reference().child("v0")
     }
-    
-    // MARK: - Firebase API methods
     
     /// Generic methods to retrieve child from database using Firebase API
     private func get<T: Decodable>(
@@ -74,8 +78,12 @@ public class HackerNewsClient {
     ) {
         get(child: "\(api.rawValue)stories", completionHandler)
     }
-    
-    // MARK: - Web Scraping methods
+}
+
+// MARK: - Web Scraping client
+
+public class HackerNewsScraperClient {
+    public static var shared = HackerNewsScraperClient()
     
     /// Retrieves comments of a specified item
     ///
@@ -97,5 +105,27 @@ public class HackerNewsClient {
     ) {
         let result = scrapeComments(for: .item(id, page!))
         completionHandler(result.0, result.1, result.2)
+    }
+    
+    /// Logs in user with the specified credentials
+    public func login(username: String, password: String, completionHandler: @escaping (Data) -> Void) {
+        let config = URLSessionConfiguration.ephemeral
+        config.httpCookieAcceptPolicy = .never
+        let session = URLSession(configuration: config)
+        
+        let parameters = "acct=\(username)&pw=\(password)"
+        let postData =  parameters.data(using: .utf8)
+        let req = URLRequest(method: "POST", urlString: "https://news.ycombinator.com/login", withData: postData!)
+        let task = session.dataTask(with: req) { data, response, error in
+            print(response)
+            print(HTTPCookieStorage.shared.cookies)
+        }
+        task.resume()
+    }
+    
+    /// Logs user out
+    public func logout(username: String, completionHandler: @escaping (String) -> Void) {
+        let code = scrapeLogout(for: HackerNews.API.User.id(username))
+        completionHandler(code ?? "")
     }
 }

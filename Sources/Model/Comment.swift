@@ -27,9 +27,5 @@ public struct Comment {
     public var indentLevel: Int
     
     /// Comment text parsed into representable String
-    public var parsedText: String?
-    
-    public mutating func setParsedText(text: String) {
-        parsedText = text
-    }
+    public var parsedText: NSAttributedString?
 }
